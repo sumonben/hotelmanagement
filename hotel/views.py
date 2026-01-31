@@ -19,7 +19,27 @@ def get_default_hotel():
     return get_object_or_404(Hotel, id=settings.DEFAULT_HOTEL_ID)
 
 
-class HomeView(TemplateView):
+class SEOContextMixin:
+    """Mixin to add SEO meta tags to context"""
+    
+    def get_seo_context(self, title, description, keywords="", image_url=""):
+        """Generate SEO context data"""
+        return {
+            'page_title': title,
+            'meta_description': description,
+            'meta_keywords': keywords,
+            'meta_image': image_url,
+            'canonical_url': self.request.build_absolute_uri(),
+        }
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if hasattr(self, 'seo_data'):
+            context.update(self.seo_data)
+        return context
+
+
+class HomeView(SEOContextMixin, TemplateView):
     """Home page for single hotel"""
     template_name = 'hotel/home.html'
     
@@ -27,12 +47,30 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         hotel = get_default_hotel()
         
+        # Set SEO data
+        self.seo_data = self.get_seo_context(
+            title=f"{hotel.name} | Luxury Hotel Booking",
+            description=hotel.meta_description or f"Book rooms at {hotel.name} in {hotel.city}. Best rates and amenities.",
+            keywords=hotel.meta_keywords or f"{hotel.name}, hotel, booking, {hotel.city}",
+            image_url=hotel.banner.url if hotel.banner else ""
+        )
+        context.update(self.seo_data)
+        
         context['hotel'] = hotel
         context['room_types'] = hotel.room_types.all()
         context['facilities'] = hotel.facilities.filter(is_available=True)
         context['reviews'] = hotel.reviews.all()[:10]
         context['average_rating'] = hotel.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
         context['search_form'] = HotelSearchForm()
+        
+        # Check if user has saved this hotel
+        if self.request.user.is_authenticated:
+            context['is_saved'] = SavedHotel.objects.filter(
+                user=self.request.user,
+                hotel=hotel
+            ).exists()
+        else:
+            context['is_saved'] = False
         
         # Available rooms
         rooms = hotel.rooms.filter(status='available', is_active=True)
@@ -60,13 +98,22 @@ class HotelListView(TemplateView):
 
 
 
-class HotelDetailView(TemplateView):
+class HotelDetailView(SEOContextMixin, TemplateView):
     """Detailed hotel view for single hotel"""
     template_name = 'hotel/hotel_detail.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         hotel = get_default_hotel()
+        
+        # Set SEO data
+        self.seo_data = self.get_seo_context(
+            title=f"{hotel.name} - {hotel.city} | Hotel Rooms & Rates",
+            description=hotel.meta_description or f"Explore rooms at {hotel.name}. {hotel.address}, {hotel.city}. Book now!",
+            keywords=hotel.meta_keywords or f"{hotel.name}, {hotel.city}, hotel rooms, accommodation",
+            image_url=hotel.image.url if hotel.image else ""
+        )
+        context.update(self.seo_data)
         
         context['hotel'] = hotel
         context['room_types'] = hotel.room_types.all()
@@ -93,7 +140,7 @@ class HotelDetailView(TemplateView):
         return context
 
 
-class RoomDetailView(DetailView):
+class RoomDetailView(SEOContextMixin, DetailView):
     """Detailed room view"""
     model = Room
     template_name = 'hotel/room_detail.html'
@@ -102,6 +149,15 @@ class RoomDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         room = self.get_object()
+        
+        # Set SEO data
+        self.seo_data = self.get_seo_context(
+            title=f"Room {room.room_number} - {room.hotel.name} | Book Now",
+            description=f"{room.room_type.name} with {room.room_type.max_guests} guests. ${room.get_price()}/night at {room.hotel.name}",
+            keywords=f"{room.room_type.name}, {room.hotel.name}, hotel room, booking",
+            image_url=room.room_type.image.url if room.room_type.image else ""
+        )
+        context.update(self.seo_data)
         
         context['images'] = room.images.all()
         context['hotel'] = room.hotel

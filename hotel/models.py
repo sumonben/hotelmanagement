@@ -35,6 +35,11 @@ class Hotel(models.Model):
     check_out_time = models.TimeField(default='11:00')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_featured = models.BooleanField(default=False)
+    
+    # SEO Fields
+    meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description (max 160 chars)")
+    meta_keywords = models.CharField(max_length=200, blank=True, help_text="Comma-separated keywords")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -58,11 +63,13 @@ class RoomType(models.Model):
     """Room types available at hotels"""
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='room_types')
     name = models.CharField(max_length=100)  # Single, Double, Suite, etc.
+    slug = models.SlugField(blank=True, help_text="Auto-generated from name")
     description = models.TextField()
     max_guests = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     beds = models.CharField(max_length=100)  # Single bed, Double bed, etc.
     amenities = models.TextField(help_text="Comma-separated list of amenities")
     image = models.ImageField(upload_to='room_types/')
+    image_alt_text = models.CharField(max_length=200, blank=True, help_text="Alt text for SEO")
     
     class Meta:
         unique_together = ['hotel', 'name']
@@ -163,7 +170,7 @@ class RoomImage(models.Model):
     """Additional images for rooms"""
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='rooms/')
-    alt_text = models.CharField(max_length=200, blank=True)
+    alt_text = models.CharField(max_length=200, blank=True, help_text="Alt text for accessibility and SEO")
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

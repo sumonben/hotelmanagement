@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /booking/
+Allow: /users/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /search/
+Disallow: /*.json$
+Disallow: /accounts/
+
+# Sitemap
+Sitemap: /sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
+
+# Request rate limit
+Request-rate: 30/1m

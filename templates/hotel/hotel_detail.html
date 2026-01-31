@@ -1,16 +1,50 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ hotel.name }} - RHMS{% endblock %}
+{% block title %}{{ hotel.name }} - Hotel Rooms & Booking{% endblock %}
+{% block meta_description %}{{ hotel.meta_description|default:hotel.description|truncatewords:30 }}{% endblock %}
+{% block meta_keywords %}{{ hotel.meta_keywords|default:"hotel, booking, rooms" }}{% endblock %}
+{% block og_title %}{{ hotel.name }} - Book Rooms Now{% endblock %}
+{% block og_description %}{{ hotel.meta_description|default:hotel.description|truncatewords:20 }}{% endblock %}
+{% block og_image %}{% if hotel.banner %}{{ hotel.banner.url }}{% elif hotel.image %}{{ hotel.image.url }}{% endif %}{% endblock %}
 
 {% block content %}
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  "name": "{{ hotel.name }}",
+  "description": "{{ hotel.description|truncatewords:50 }}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{ hotel.address }}",
+    "addressLocality": "{{ hotel.city }}",
+    "addressRegion": "{{ hotel.state }}",
+    "postalCode": "{{ hotel.postal_code }}",
+    "addressCountry": "{{ hotel.country }}"
+  },
+  "telephone": "{{ hotel.phone }}",
+  "email": "{{ hotel.email }}",
+  "image": "{{ request.build_absolute_uri }}{% if hotel.banner %}{{ hotel.banner.url }}{% elif hotel.image %}{{ hotel.image.url }}{% endif %}",
+  "url": "{{ request.build_absolute_uri }}",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ average_rating|floatformat:1 }}",
+    "reviewCount": "{{ hotel.total_reviews }}"
+  },
+  "checkinTime": "{{ hotel.check_in_time }}",
+  "checkoutTime": "{{ hotel.check_out_time }}"
+}
+</script>
+
 <div class="container my-5">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'hotel:home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'hotel:home' %}">Home</a></li>
-            <li class="breadcrumb-item active">{{ hotel.name }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'hotel:home' %}">Hotel</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ hotel.name }}</li>
         </ol>
     </nav>
 
@@ -18,7 +52,7 @@
     <div class="row mb-5">
         <div class="col-md-8">
             {% if hotel.banner %}
-                <img src="{{ hotel.banner.url }}" alt="{{ hotel.name }}" class="img-fluid rounded mb-3" style="height: 400px; object-fit: cover; width: 100%;">
+                <img src="{{ hotel.banner.url }}" alt="{{ hotel.name }} banner" class="img-fluid rounded mb-3" style="height: 400px; object-fit: cover; width: 100%;">
             {% else %}
                 <div class="img-fluid rounded mb-3" style="height: 400px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-image" style="font-size: 4rem; color: #ccc;"></i>
@@ -36,7 +70,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Hotel Information</h5>
+                    <h2 class="card-title" style="font-size: 1.25rem;">Hotel Information</h2>
                     <ul class="list-unstyled">
                         <li><strong>Check-in:</strong> {{ hotel.check_in_time }}</li>
                         <li><strong>Check-out:</strong> {{ hotel.check_out_time }}</li>
@@ -51,7 +85,7 @@
                         </li>
                     </ul>
                     {% if user.is_authenticated %}
-                    <form action="{% url 'hotel:save_hotel' slug=hotel.slug %}" method="post" class="mt-3">
+                    <form action="{% url 'hotel:save_hotel' %}" method="post" class="mt-3">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-danger w-100">
                             {% if is_saved %}

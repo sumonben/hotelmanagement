@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Hotels - RHMS{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4"><i class="fas fa-building"></i> Hotels</h1>
+    
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="">
+                        <div class="mb-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control" placeholder="Hotel name..." value="{{ request.GET.search }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" placeholder="City..." value="{{ request.GET.city }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Price Range</label>
+                            <div class="input-group mb-2">
+                                <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request.GET.min_price }}">
+                            </div>
+                            <div class="input-group">
+                                <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request.GET.max_price }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Sort By</label>
+                            <select name="sort_by" class="form-select">
+                                <option value="newest" {% if request.GET.sort_by == 'newest' %}selected{% endif %}>Newest</option>
+                                <option value="rating" {% if request.GET.sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+                                <option value="price_low" {% if request.GET.sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if request.GET.sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hotels List -->
+        <div class="col-md-9">
+            {% if hotels %}
+                <div class="row">
+                    {% for hotel in hotels %}
+                    <div class="col-md-6 mb-4">
+                        <div class="hotel-card">
+                            {% if hotel.image %}
+                                <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="card-img-top">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-image fa-3x text-white"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="hotel-name">{{ hotel.name }}</h5>
+                                <p class="hotel-location">
+                                    <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}, {{ hotel.state }}
+                                </p>
+                                <p class="card-text">{{ hotel.description|truncatewords:20 }}</p>
+                                <div class="hotel-rating mb-2">
+                                    <i class="fas fa-star"></i>
+                                    {% if hotel.total_reviews > 0 %}
+                                        {{ hotel.get_average_rating }} ({{ hotel.total_reviews }})
+                                    {% else %}
+                                        No ratings
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="hotel-price">
+                                        {% if hotel.rooms.first %}
+                                            ${{ hotel.rooms.first.get_price }}/night
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'hotel:hotel_detail' slug=hotel.slug %}" class="btn btn-sm btn-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No hotels found. Try adjusting your filters.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

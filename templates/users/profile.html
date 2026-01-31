@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Profile - RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-user"></i> User Profile</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profile Picture Section -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    {% if object.profile_picture %}
+                        <img src="{{ object.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <h5 class="mt-3">{{ user.first_name }} {{ user.last_name }}</h5>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    <hr>
+                    <div class="text-start">
+                        <small class="text-muted">
+                            <i class="fas fa-envelope"></i> {{ user.email }}<br>
+                            <i class="fas fa-phone"></i> {{ object.phone|default:"Not provided" }}<br>
+                            <i class="fas fa-map-marker-alt"></i> {{ object.city|default:"Not provided" }}, {{ object.country|default:"Not provided" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Links Card -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-link"></i> Quick Links</h6>
+                </div>
+                <div class="card-body p-0">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-outline-primary btn-sm w-100 border-0 rounded-0">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{% url 'users:change_password' %}" class="btn btn-outline-primary btn-sm w-100 border-0 rounded-0">
+                        <i class="fas fa-key"></i> Change Password
+                    </a>
+                    <a href="{% url 'users:notification_preferences' %}" class="btn btn-outline-primary btn-sm w-100 border-0 rounded-0">
+                        <i class="fas fa-bell"></i> Notifications
+                    </a>
+                    <a href="{% url 'users:account' %}" class="btn btn-outline-primary btn-sm w-100 border-0 rounded-0">
+                        <i class="fas fa-cog"></i> Account Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form Section -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-edit"></i> Edit Profile</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Personal Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3"><i class="fas fa-person"></i> Personal Information</h6>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <small class="text-danger d-block">{{ form.first_name.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <small class="text-danger d-block">{{ form.last_name.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <small class="text-danger d-block">{{ form.email.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <small class="text-danger d-block">{{ form.phone.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <small class="text-danger d-block">{{ form.date_of_birth.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <small class="text-danger d-block">{{ form.gender.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.nationality.id_for_label }}" class="form-label">Nationality</label>
+                                {{ form.nationality }}
+                                {% if form.nationality.errors %}
+                                    <small class="text-danger d-block">{{ form.nationality.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Profile Picture -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <h6 class="text-primary mb-3"><i class="fas fa-image"></i> Profile Picture</h6>
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Upload Profile Picture</label>
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                    <small class="text-danger d-block">{{ form.profile_picture.errors.0 }}</small>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">Recommended size: 300x300px. Max file size: 5MB</small>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3"><i class="fas fa-map"></i> Address</h6>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <small class="text-danger d-block">{{ form.address.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <small class="text-danger d-block">{{ form.city.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.state.id_for_label }}" class="form-label">State/Province</label>
+                                {{ form.state }}
+                                {% if form.state.errors %}
+                                    <small class="text-danger d-block">{{ form.state.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <small class="text-danger d-block">{{ form.country.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
+                                {{ form.postal_code }}
+                                {% if form.postal_code.errors %}
+                                    <small class="text-danger d-block">{{ form.postal_code.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-5">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <a href="{% url 'users:dashboard' %}" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Information Card -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Account Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Member Since:</strong> <br>
+                                <span class="text-muted">{{ object.created_at|date:"F d, Y" }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Last Updated:</strong> <br>
+                                <span class="text-muted">{{ object.updated_at|date:"F d, Y \a\t H:i" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Total Bookings:</strong> <br>
+                                <span class="text-info h5">{{ object.total_bookings }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Loyalty Points:</strong> <br>
+                                <span class="text-success h5">{{ object.loyalty_points }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+</style>
+{% endblock %}

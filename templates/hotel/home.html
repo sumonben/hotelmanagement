@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ hotel.name }} - RHMS{% endblock %}
+
+{% block content %}
+<!-- Carousel Section -->
+{% if carousel_slides %}
+<div class="carousel-section mb-5">
+    <div id="hotelCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators">
+            {% for slide in carousel_slides %}
+                <button type="button" data-bs-target="#hotelCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+
+        <!-- Carousel Items -->
+        <div class="carousel-inner">
+            {% for slide in carousel_slides %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="5000">
+                    {% if slide.image %}
+                        <img src="{{ slide.image.url }}" class="d-block w-100 carousel-image" alt="{{ slide.title }}">
+                    {% else %}
+                        <div class="d-block w-100 carousel-image bg-secondary d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image text-white" style="font-size: 5rem;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="carousel-caption">
+                        <div class="carousel-content">
+                            <h1 class="carousel-title animated-title">{{ slide.title }}</h1>
+                            {% if slide.subtitle %}
+                                <p class="carousel-subtitle animated-subtitle">{{ slide.subtitle }}</p>
+                            {% endif %}
+                            {% if slide.description %}
+                                <p class="carousel-description">{{ slide.description }}</p>
+                            {% endif %}
+                            {% if slide.button_text %}
+                                <a href="{% if slide.button_url %}{{ slide.button_url }}{% else %}{% url 'hotel:hotel_detail' %}{% endif %}" class="btn btn-primary btn-lg carousel-btn">
+                                    {{ slide.button_text }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Carousel Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#hotelCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#hotelCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<style>
+    .carousel-section {
+        margin-top: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .carousel {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .carousel-image {
+        height: 500px;
+        object-fit: cover;
+        filter: brightness(0.6);
+    }
+
+    .carousel-caption {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-content {
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .carousel-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: 1px;
+    }
+
+    .carousel-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .carousel-description {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .carousel-btn {
+        padding: 0.75rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        display: inline-block;
+        cursor: pointer;
+        background-color: #3498db !important;
+        border-color: #3498db !important;
+        color: white !important;
+        text-decoration: none;
+        z-index: 5;
+        position: relative;
+    }
+
+    .carousel-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.5);
+        background-color: #2980b9 !important;
+        color: white !important;
+        text-decoration: none;
+    }
+
+    .carousel-indicators button {
+        background-color: rgba(255, 255, 255, 0.6);
+        border: none;
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        margin: 0 6px;
+    }
+
+    .carousel-indicators button.active {
+        background-color: white;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .carousel-image {
+            height: 300px;
+        }
+
+        .carousel-title {
+            font-size: 2rem;
+        }
+
+        .carousel-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .carousel-btn {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+{% else %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        {% if hotel.banner %}
+            <img src="{{ hotel.banner.url }}" alt="{{ hotel.name }}" class="hero-image">
+        {% endif %}
+        <h1><i class="fas fa-hotel"></i> {{ hotel.name }}</h1>
+        <p class="lead">{{ hotel.description }}</p>
+        <div class="hotel-info">
+            <span><i class="fas fa-map-marker-alt"></i> {{ hotel.city }}, {{ hotel.state }}, {{ hotel.country }}</span>
+            <span><i class="fas fa-star"></i> {{ average_rating }}/5 ({{ hotel.total_reviews }} reviews)</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Search Form -->
+<div class="container mb-5">
+    <div class="search-form">
+        <form method="post" action="{% url 'hotel:search_availability' %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-3">
+                    {{ search_form.check_in_date }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.check_out_date }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.guests }}
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Check Availability
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Hotel Info -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>About {{ hotel.name }}</h2>
+            <p>{{ hotel.description }}</p>
+            
+            {% if facilities %}
+            <h3>Facilities & Amenities</h3>
+            <div class="row">
+                {% for facility in facilities %}
+                <div class="col-md-6 mb-3">
+                    <div class="facility-item">
+                        {% if facility.icon %}
+                            <i class="{{ facility.icon }}"></i>
+                        {% endif %}
+                        <strong>{{ facility.name }}</strong>
+                        <p>{{ facility.description }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="hotel-details-card">
+                <h4>Hotel Details</h4>
+                <ul class="list-unstyled">
+                    <li><strong>Email:</strong> {{ hotel.email }}</li>
+                    <li><strong>Phone:</strong> {{ hotel.phone }}</li>
+                    <li><strong>Address:</strong> {{ hotel.address }}</li>
+                    <li><strong>Check-in:</strong> {{ hotel.check_in_time }}</li>
+                    <li><strong>Check-out:</strong> {{ hotel.check_out_time }}</li>
+                    <li><strong>Rating:</strong> {{ average_rating }}/5</li>
+                </ul>
+                
+                {% if user.is_authenticated %}
+                <div class="mt-3">
+                    {% if is_saved %}
+                        <form method="post" action="{% url 'hotel:save_hotel' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-heart"></i> Remove from Wishlist
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'hotel:save_hotel' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-heart"></i> Add to Wishlist
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+                {% else %}
+                <a href="{% url 'users:login' %}" class="btn btn-outline-primary w-100 mt-3">
+                    <i class="fas fa-heart"></i> Add to Wishlist
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Room Types -->
+{% if room_types %}
+<div class="container mb-5">
+    <h2 class="mb-4"><i class="fas fa-door-open"></i> Room Types</h2>
+    <div class="row">
+        {% for room_type in room_types %}
+        <div class="col-md-6 mb-4">
+            <div class="room-type-card">
+                {% if room_type.image %}
+                    <img src="{{ room_type.image.url }}" alt="{{ room_type.name }}" class="card-img-top">
+                {% endif %}
+                <div class="card-body">
+                    <h5>{{ room_type.name }}</h5>
+                    <p class="text-muted">{{ room_type.description }}</p>
+                    <ul class="list-unstyled">
+                        <li><strong>Guests:</strong> Up to {{ room_type.max_guests }}</li>
+                        <li><strong>Beds:</strong> {{ room_type.beds }}</li>
+                        <li><strong>Amenities:</strong> {{ room_type.amenities }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Available Rooms -->
+{% if rooms %}
+<div class="container mb-5">
+    <h2 class="mb-4"><i class="fas fa-bed"></i> Available Rooms</h2>
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-md-4 mb-4">
+            <div class="room-card">
+                <div class="card-body">
+                    <h5 class="room-number">Room {{ room.room_number }}</h5>
+                    <p class="text-muted">Floor {{ room.floor }}</p>
+                    <p><strong>Type:</strong> {{ room.room_type.name }}</p>
+                    <div class="room-price">
+                        {% if room.discount_price %}
+                            <span class="original-price"><s>${{ room.price_per_night }}/night</s></span>
+                            <span class="discount-price">${{ room.discount_price }}/night</span>
+                        {% else %}
+                            <span>${{ room.price_per_night }}/night</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'hotel:room_detail' room.pk %}" class="btn btn-sm btn-primary mt-3">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Reviews Section -->
+<div class="container mb-5">
+    <h2 class="mb-4"><i class="fas fa-comments"></i> Guest Reviews</h2>
+    
+    {% if user.is_authenticated %}
+    <div class="mb-4">
+        <a href="{% url 'hotel:review_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Write a Review
+        </a>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <a href="{% url 'users:login' %}">Login</a> to write a review.
+    </div>
+    {% endif %}
+    
+    {% if reviews %}
+    <div class="reviews-list">
+        {% for review in reviews %}
+        <div class="review-item mb-4">
+            <div class="review-header">
+                <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                <div class="review-rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <p class="review-date text-muted">{{ review.created_at|date:"M d, Y" }}</p>
+            <p class="review-text">{{ review.review_text }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No reviews yet. Be the first to review!</p>
+    {% endif %}
+</div>
+
+{% endblock %}
+

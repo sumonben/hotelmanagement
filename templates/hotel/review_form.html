@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write a Review - {{ hotel.name }} - RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-star"></i> Write a Review for {{ hotel.name }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Rating Section -->
+                        <div class="mb-4">
+                            <div class="form-group">
+                                <label class="form-label"><strong>Your Rating</strong> <span class="text-danger">*</span></label>
+                                <div class="rating-selector mb-3">
+                                    {% for radio in form.rating %}
+                                        <div class="form-check form-check-inline">
+                                            {{ radio.tag }}
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}" style="font-size: 1.5rem; cursor: pointer;">
+                                                {{ radio.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.rating.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ form.rating.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Title Section -->
+                        <div class="mb-4">
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}" class="form-label"><strong>Review Title</strong> <span class="text-danger">*</span></label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ form.title.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">Give your review a short, descriptive title</small>
+                            </div>
+                        </div>
+
+                        <!-- Comment Section -->
+                        <div class="mb-4">
+                            <div class="form-group">
+                                <label for="{{ form.comment.id_for_label }}" class="form-label"><strong>Your Experience</strong> <span class="text-danger">*</span></label>
+                                {{ form.comment }}
+                                {% if form.comment.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ form.comment.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">Share details about your stay - what you liked and areas for improvement</small>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Information Card -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3"><i class="fas fa-info-circle"></i> Reviewing</h6>
+                                <div class="d-flex align-items-center">
+                                    {% if hotel.image %}
+                                        <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-secondary rounded me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                            <i class="fas fa-hotel text-white" style="font-size: 2rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-1">{{ hotel.name }}</h6>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-map-marker-alt"></i> {{ hotel.city }}, {{ hotel.state }}
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-phone"></i> {{ hotel.phone }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Guidelines -->
+                        <div class="alert alert-info alert-dismissible" role="alert">
+                            <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> Review Guidelines</h6>
+                            <ul class="mb-0 small">
+                                <li>Be honest and fair in your review</li>
+                                <li>Focus on your actual experience</li>
+                                <li>Provide constructive feedback</li>
+                                <li>Be respectful and professional</li>
+                                <li>Do not include personal information</li>
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Form Errors -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                <strong>Error:</strong>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+
+                        <!-- Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{% url 'hotel:hotel_detail' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="mt-4 p-4 bg-light rounded">
+                <h6 class="mb-2"><i class="fas fa-question-circle"></i> Why Write a Review?</h6>
+                <p class="text-muted mb-0">
+                    Your review helps other guests make informed decisions and assists us in improving our services. 
+                    Only verified guests can write reviews, ensuring authentic feedback from real visitors.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .form-check-label {
+        transition: all 0.2s ease;
+    }
+    
+    .form-check-input:checked ~ label,
+    .form-check-label:hover {
+        color: #ffc107;
+    }
+    
+    .rating-selector .form-check-input {
+        display: none;
+    }
+    
+    .rating-selector label {
+        color: #ccc;
+        transition: color 0.2s ease;
+    }
+    
+    .rating-selector .form-check-input:checked + label {
+        color: #ffc107;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.75rem;
+    }
+    
+    .card-header {
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+            
+            <!-- Welcome Message -->
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-wave-hand"></i> 
+                Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted"><i class="fas fa-calendar-check"></i> Total Bookings</h6>
+                    <h3 class="text-primary">{{ stats.total_bookings }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted"><i class="fas fa-clock"></i> Upcoming</h6>
+                    <h3 class="text-warning">{{ stats.upcoming_bookings }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted"><i class="fas fa-check-circle"></i> Completed</h6>
+                    <h3 class="text-success">{{ stats.completed_bookings }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h6 class="text-muted"><i class="fas fa-star"></i> Loyalty Points</h6>
+                    <h3 class="text-info">{{ stats.loyalty_points }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Recent Bookings -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Recent Bookings</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Booking ID</th>
+                                        <th>Room</th>
+                                        <th>Check-in</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in recent_bookings %}
+                                    <tr>
+                                        <td><code>{{ booking.booking_id|truncatechars:15 }}</code></td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ booking.room.room_number }}</span>
+                                        </td>
+                                        <td>{{ booking.check_in_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if booking.status == 'pending' %}bg-warning
+                                                {% elif booking.status == 'confirmed' %}bg-success
+                                                {% elif booking.status == 'checked_in' %}bg-info
+                                                {% elif booking.status == 'checked_out' %}bg-secondary
+                                                {% elif booking.status == 'cancelled' %}bg-danger
+                                                {% endif %}">
+                                                {{ booking.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'booking:booking_detail' booking.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-center">
+                            <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="text-muted mt-3">No bookings yet</p>
+                            <a href="{% url 'hotel:home' %}" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Make Your First Booking
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'hotel:home' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search"></i> Search Hotel
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'booking:booking_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar"></i> View All Bookings
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'hotel:saved_hotels' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-heart"></i> Saved Hotels
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'users:profile' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user"></i> Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Profile Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-circle"></i> Profile</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle mb-3 mx-auto" style="width: 100px; height: 100px; background: #e9ecef; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user" style="font-size: 3rem; color: #adb5bd;"></i>
+                        </div>
+                    {% endif %}
+
+                    <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    <p class="small"><i class="fas fa-envelope"></i> {{ user.email }}</p>
+
+                    {% if profile.phone %}
+                        <p class="small"><i class="fas fa-phone"></i> {{ profile.phone }}</p>
+                    {% endif %}
+
+                    <a href="{% url 'users:profile' %}" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Account</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> Profile Settings
+                    </a>
+                    <a href="{% url 'users:change_password' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock"></i> Change Password
+                    </a>
+                    <a href="{% url 'users:logout' %}" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Member Info -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Member</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">
+                        <strong>Member Since:</strong><br>
+                        {{ user.date_joined|date:"F d, Y" }}
+                    </p>
+                    <p class="small mb-0">
+                        <strong>Total Nights:</strong><br>
+                        {{ profile.total_nights|default:"0" }} nights
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    {% if recent_bookings %}
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h4 class="mb-4"><i class="fas fa-chart-bar"></i> Booking Statistics</h4>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Booking Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Monthly Bookings</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .table-responsive {
+        border-radius: 0;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .list-group-item {
+        border: none;
+        padding: 12px 20px;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-3, .col-md-4, .col-md-6, .col-md-8 {
+            margin-bottom: 15px;
+        }
+    }
+</style>
+
+<!-- Chart.js for statistics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Confirmed', 'Checked In', 'Checked Out', 'Cancelled'],
+                    datasets: [{
+                        data: [
+                            {{ stats.upcoming_bookings }},
+                            {{ stats.upcoming_bookings }},
+                            0,
+                            {{ stats.completed_bookings }},
+                            0
+                        ],
+                        backgroundColor: ['#ffc107', '#28a745', '#17a2b8', '#6c757d', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Monthly Chart
+        const monthlyCtx = document.getElementById('monthlyChart');
+        if (monthlyCtx) {
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Bookings',
+                        data: [0, 0, 0, 0, 0, {{ stats.total_bookings }}],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

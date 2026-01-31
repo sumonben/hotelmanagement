@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment - {{ booking.booking_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4"><i class="fas fa-credit-card"></i> Complete Payment</h2>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Booking ID:</strong> {{ booking.booking_id }}
+            </div>
+
+            <form method="post" id="paymentForm" novalidate>
+                {% csrf_token %}
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-wallet"></i> Payment Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for radio in form.payment_method %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.payment_method.errors %}
+                            <div class="alert alert-danger">
+                                {{ form.payment_method.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Credit Card Section -->
+                <div id="creditCardFields" class="card mb-4 shadow-sm" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-credit-card"></i> Card Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ form.card_holder.id_for_label }}" class="form-label">{{ form.card_holder.label }}</label>
+                            {{ form.card_holder }}
+                            {% if form.card_holder.errors %}
+                                <div class="invalid-feedback d-block">{{ form.card_holder.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.card_number.id_for_label }}" class="form-label">{{ form.card_number.label }}</label>
+                            {{ form.card_number }}
+                            {% if form.card_number.errors %}
+                                <div class="invalid-feedback d-block">{{ form.card_number.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.expiry_date.id_for_label }}" class="form-label">{{ form.expiry_date.label }}</label>
+                                {{ form.expiry_date }}
+                                {% if form.expiry_date.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.expiry_date.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.cvv.id_for_label }}" class="form-label">{{ form.cvv.label }}</label>
+                                {{ form.cvv }}
+                                {% if form.cvv.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.cvv.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PayPal Section -->
+                <div id="paypalFields" class="card mb-4 shadow-sm" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fab fa-paypal"></i> PayPal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ form.paypal_email.id_for_label }}" class="form-label">{{ form.paypal_email.label }}</label>
+                            {{ form.paypal_email }}
+                            {% if form.paypal_email.errors %}
+                                <div class="invalid-feedback d-block">{{ form.paypal_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SSL Commerz Section -->
+                <div id="sslcommerz_fields" class="card mb-4 shadow-sm" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-mobile-alt"></i> SSL Commerz Payment</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">You will be redirected to SSL Commerz to complete your payment securely.</p>
+                        <div class="alert alert-info">
+                            <strong>Available Payment Methods:</strong><br>
+                            <i class="fas fa-mobile-alt"></i> Bkash<br>
+                            <i class="fas fa-mobile-alt"></i> Nagad<br>
+                            <i class="fas fa-credit-card"></i> Credit Card<br>
+                            <i class="fas fa-university"></i> Bank Transfer<br>
+                            Amount to Pay: <strong>${{ booking.total_price|floatformat:2 }}</strong>
+                        </div>
+                        <small class="text-muted">Your transaction will be processed securely through SSL Commerz.</small>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer Section -->
+                <div id="bankTransferFields" class="card mb-4 shadow-sm" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-university"></i> Bank Transfer</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Please transfer the amount to our bank account. We will confirm your booking once the payment is received.</p>
+                        <div class="alert alert-info">
+                            <strong>Bank Details:</strong><br>
+                            Bank Name: Example Bank<br>
+                            Account Number: 1234567890<br>
+                            SWIFT Code: EXBEDEF<br>
+                            Amount: <strong>${{ booking.total_price|floatformat:2 }}</strong>
+                        </div>
+                        <div class="form-check">
+                            {{ form.agree_terms }}
+                            <label class="form-check-label" for="{{ form.agree_terms.id_for_label }}">
+                                I have transferred the amount to the bank account above
+                            </label>
+                            {% if form.agree_terms.errors %}
+                                <div class="invalid-feedback d-block">{{ form.agree_terms.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="{% url 'booking:booking_detail' booking.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check"></i> Complete Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Payment Summary -->
+        <div class="col-md-4">
+            <div class="card shadow-sm position-sticky" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Payment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-7">
+                            <p class="text-muted">Room/Night:</p>
+                        </div>
+                        <div class="col-5 text-end">
+                            <p>${{ booking.room_price_per_night|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-7">
+                            <p class="text-muted">Nights:</p>
+                        </div>
+                        <div class="col-5 text-end">
+                            <p>{{ booking.number_of_nights }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-2">
+                        <div class="col-7">
+                            <p class="text-muted">Subtotal:</p>
+                        </div>
+                        <div class="col-5 text-end">
+                            <p>${{ booking.subtotal|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-7">
+                            <p class="text-muted">Tax (10%):</p>
+                        </div>
+                        <div class="col-5 text-end">
+                            <p>${{ booking.tax_amount|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-7">
+                            <p class="h5"><strong>Total:</strong></p>
+                        </div>
+                        <div class="col-5 text-end">
+                            <p class="h5 text-success"><strong>${{ booking.total_price|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="mb-3"><i class="fas fa-calendar"></i> Booking Details</h6>
+                        <p class="small text-muted">
+                            <strong>Check-in:</strong> {{ booking.check_in_date|date:"M d, Y" }}<br>
+                            <strong>Check-out:</strong> {{ booking.check_out_date|date:"M d, Y" }}<br>
+                            <strong>Room:</strong> {{ booking.room.room_number }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('paymentForm');
+    const paymentMethodInputs = document.querySelectorAll('input[name="payment_method"]');
+    
+    function updatePaymentFields() {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (!selectedMethod) return;
+        
+        // Hide all fields
+        document.getElementById('creditCardFields').style.display = 'none';
+        document.getElementById('paypalFields').style.display = 'none';
+        document.getElementById('bankTransferFields').style.display = 'none';
+        document.getElementById('sslcommerz_fields').style.display = 'none';
+        
+        // Show selected method fields
+        if (['credit_card', 'debit_card'].includes(selectedMethod.value)) {
+            document.getElementById('creditCardFields').style.display = 'block';
+        } else if (selectedMethod.value === 'paypal') {
+            document.getElementById('paypalFields').style.display = 'block';
+        } else if (selectedMethod.value === 'bank_transfer') {
+            document.getElementById('bankTransferFields').style.display = 'block';
+        } else if (selectedMethod.value === 'sslcommerz') {
+            document.getElementById('sslcommerz_fields').style.display = 'block';
+        }
+    }
+    
+    paymentMethodInputs.forEach(input => {
+        input.addEventListener('change', updatePaymentFields);
+    });
+    
+    // Initialize on page load
+    updatePaymentFields();
+});
+</script>
+
+<style>
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+    }
+
+    .form-control:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .position-sticky {
+            position: relative !important;
+            top: auto !important;
+            margin-top: 20px;
+        }
+    }
+</style>
+{% endblock %}

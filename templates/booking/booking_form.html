@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Book Room - {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4"><i class="fas fa-calendar-check"></i> Complete Your Booking</h2>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-door-open"></i> Room Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Room Number:</strong> {{ room.room_number }}</p>
+                                <p><strong>Room Type:</strong> {{ room.room_type.name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Floor:</strong> {{ room.floor }}</p>
+                                <p><strong>Max Guests:</strong> {{ room.room_type.max_guests }}</p>
+                            </div>
+                        </div>
+                        <p><strong>Beds:</strong> {{ room.room_type.beds }}</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar"></i> Booking Dates</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.check_in_date.id_for_label }}" class="form-label">{{ form.check_in_date.label }}</label>
+                                {{ form.check_in_date }}
+                                {% if form.check_in_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.check_in_date.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.check_out_date.id_for_label }}" class="form-label">{{ form.check_out_date.label }}</label>
+                                {{ form.check_out_date }}
+                                {% if form.check_out_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.check_out_date.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>Number of Nights:</strong> 
+                            <span id="nights">{{ nights|default:"Calculate from dates" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-users"></i> Guest Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.number_of_guests.id_for_label }}" class="form-label">{{ form.number_of_guests.label }}</label>
+                                {{ form.number_of_guests }}
+                                {% if form.number_of_guests.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.number_of_guests.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.guest_name.id_for_label }}" class="form-label">{{ form.guest_name.label }}</label>
+                                {{ form.guest_name }}
+                                {% if form.guest_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.guest_name.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.guest_email.id_for_label }}" class="form-label">{{ form.guest_email.label }}</label>
+                                {{ form.guest_email }}
+                                {% if form.guest_email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.guest_email.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.guest_phone.id_for_label }}" class="form-label">{{ form.guest_phone.label }}</label>
+                                {{ form.guest_phone }}
+                                {% if form.guest_phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.guest_phone.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-clipboard"></i> Special Requests</h5>
+                    </div>
+                    <div class="card-body">
+                        <label for="{{ form.special_requests.id_for_label }}" class="form-label">{{ form.special_requests.label }}</label>
+                        {{ form.special_requests }}
+                        {% if form.special_requests.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.special_requests.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <h5>Booking Error:</h5>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="{% url 'hotel:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Hotel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check"></i> Continue to Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm position-sticky" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Price Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="text-muted">Room Price/Night:</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>${{ room.get_price|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    {% if nights %}
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="text-muted">Number of Nights:</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>{{ nights }}</strong></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="text-muted">Subtotal:</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>${{ estimated_subtotal|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="text-muted">Tax (10%):</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p><strong>${{ estimated_tax|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="h5">Total:</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p class="h5 text-success"><strong>${{ estimated_total|floatformat:2 }}</strong></p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">Select dates to see pricing</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="mb-3"><i class="fas fa-info-circle"></i> Hotel Information</h6>
+                        <p class="small text-muted mb-2">
+                            <strong>{{ hotel.name }}</strong><br>
+                            {{ hotel.address }}<br>
+                            {{ hotel.city }}, {{ hotel.state }} {{ hotel.postal_code }}<br>
+                            {{ hotel.country }}
+                        </p>
+                        <p class="small text-muted">
+                            <strong>Check-in:</strong> {{ hotel.check_in_time }}<br>
+                            <strong>Check-out:</strong> {{ hotel.check_out_time }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .position-sticky {
+            position: relative !important;
+            top: auto !important;
+            margin-top: 20px;
+        }
+    }
+</style>
+{% endblock %}

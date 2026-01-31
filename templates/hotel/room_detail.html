@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ room.room_number }} - {{ hotel.name }} | RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'hotel:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hotel:home' %}">{{ hotel.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ room.room_number }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Image Gallery -->
+        <div class="col-md-7 mb-4">
+            <div class="card shadow-sm" style="border: none; border-radius: 10px;">
+                {% if images %}
+                    <!-- Main Image -->
+                    <div id="mainImageContainer" style="height: 450px; overflow: hidden; border-radius: 10px;">
+                        <img id="mainImage" src="{{ images.0.image.url }}" alt="{{ room.room_number }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+
+                    <!-- Thumbnail Gallery -->
+                    {% if images.count > 1 %}
+                    <div class="mt-3 d-flex gap-2" style="overflow-x: auto; padding: 0 10px;">
+                        {% for image in images %}
+                        <img src="{{ image.image.url }}" alt="Room image" 
+                             class="room-thumbnail" 
+                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid #ddd; transition: all 0.3s;"
+                             onclick="changeMainImage('{{ image.image.url }}')">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div style="height: 450px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                        <i class="fas fa-image" style="font-size: 4rem; color: #ccc;"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Room Details Sidebar -->
+        <div class="col-md-5">
+            <!-- Room Info Card -->
+            <div class="card shadow-sm mb-3" style="border: none;">
+                <div class="card-body">
+                    <h2 class="mb-2">{{ room.room_number }}</h2>
+                    <p class="text-muted mb-3">
+                        <span class="badge bg-primary">{{ room_type.name }}</span>
+                        {% if room.status == 'available' %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Not Available</span>
+                        {% endif %}
+                    </p>
+
+                    <!-- Room Type -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h5 class="mb-2"><i class="fas fa-door-open"></i> Room Type</h5>
+                        <p class="mb-0">{{ room_type.name }}</p>
+                    </div>
+
+                    <!-- Room Capacity -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h5 class="mb-2"><i class="fas fa-users"></i> Capacity</h5>
+                        <p class="mb-0">{{ room.capacity }} guest{{ room.capacity|pluralize }}</p>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h5 class="mb-2"><i class="fas fa-dollar-sign"></i> Price per Night</h5>
+                        <h4 class="text-primary mb-0">${{ room.price_per_night|floatformat:2 }}</h4>
+                    </div>
+
+                    <!-- Floor -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h5 class="mb-2"><i class="fas fa-building"></i> Floor</h5>
+                        <p class="mb-0">Floor {{ room.floor }}</p>
+                    </div>
+
+                    <!-- Availability Check -->
+                    {% if check_in and check_out %}
+                        <div class="alert {% if available %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+                            {% if available %}
+                                <i class="fas fa-check-circle"></i> <strong>Available</strong> for your selected dates
+                            {% else %}
+                                <i class="fas fa-times-circle"></i> <strong>Not Available</strong> for your selected dates
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description Card -->
+            {% if room_type.description %}
+            <div class="card shadow-sm mb-3" style="border: none;">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Description</h5>
+                </div>
+                <div class="card-body">
+                    {{ room_type.description }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Amenities Card -->
+            {% if room_type.amenities %}
+            <div class="card shadow-sm mb-3" style="border: none;">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Amenities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for amenity in room_type.amenities %}
+                        <div class="col-md-6 mb-2">
+                            <p class="mb-1">
+                                <i class="fas fa-check text-success"></i> 
+                                <span>{{ amenity }}</span>
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="card shadow-sm" style="border: none;">
+                <div class="card-body">
+                    {% if available or not check_in and not check_out %}
+                        <a href="{% url 'booking:create_booking' room.id %}{% if check_in %}?check_in={{ check_in }}&check_out={{ check_out }}{% endif %}" 
+                           class="btn btn-primary w-100 mb-2 btn-lg">
+                            <i class="fas fa-calendar-plus"></i> Book This Room
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary w-100 mb-2 btn-lg" disabled>
+                            <i class="fas fa-ban"></i> Not Available
+                        </button>
+                    {% endif %}
+
+                    <a href="{% url 'hotel:home' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Back to Hotel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Features (if amenities field exists) -->
+    {% if room_type.amenities %}
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h4 class="mb-4"><i class="fas fa-list"></i> Full Features</h4>
+        </div>
+        <div class="col-md-12">
+            <div class="card shadow-sm" style="border: none;">
+                <div class="card-body">
+                    <div class="row">
+                        {% for amenity in room_type.amenities %}
+                        <div class="col-md-4 mb-3">
+                            <p>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>{{ amenity }}</strong>
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hotel Information -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h4 class="mb-4"><i class="fas fa-building"></i> Hotel Information</h4>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm" style="border: none;">
+                <div class="card-body">
+                    <h5>{{ hotel.name }}</h5>
+                    <p class="text-muted">{{ hotel.description|truncatewords:30 }}</p>
+                    <p class="mb-1">
+                        <i class="fas fa-map-marker-alt text-primary"></i> 
+                        {{ hotel.location }}
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-phone text-primary"></i> 
+                        {{ hotel.phone }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="fas fa-star text-warning"></i> 
+                        Rating: {{ hotel.rating|floatformat:1 }}/5.0
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'hotel:hotel_detail' %}" class="btn btn-outline-primary w-100 h-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right me-2"></i> View Full Hotel Details
+            </a>
+        </div>
+    </div>
+
+    <!-- Related Rooms -->
+    <div class="row mt-5 mb-5">
+        <div class="col-md-12">
+            <h4 class="mb-4"><i class="fas fa-door-open"></i> Other Available Rooms</h4>
+        </div>
+        <div class="col-md-12">
+            <div id="roomsCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% with hotel.rooms.all|dictsort:"id" as related_rooms %}
+                        {% if related_rooms %}
+                            {% for room_item in related_rooms %}
+                                {% if forloop.first %}
+                                <div class="carousel-item active">
+                                {% elif forloop.counter0|divisibleby:3 %}
+                                </div>
+                                <div class="carousel-item">
+                                {% endif %}
+
+                                    {% if forloop.counter|divisibleby:3 or forloop.first %}
+                                    <div class="row">
+                                    {% endif %}
+
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card shadow-sm h-100" style="border: none;">
+                                                {% if room_item.images.all %}
+                                                    <img src="{{ room_item.images.first.image.url }}" class="card-img-top" 
+                                                         style="height: 250px; object-fit: cover;" alt="{{ room_item.room_number }}">
+                                                {% else %}
+                                                    <div style="height: 250px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="fas fa-image" style="font-size: 3rem; color: #ccc;"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Room {{ room_item.room_number }}</h6>
+                                                    <p class="card-text text-muted">
+                                                        <small>{{ room_item.room_type.name }}</small>
+                                                    </p>
+                                                    <p class="card-text">
+                                                        <strong>${{ room_item.price_per_night|floatformat:2 }}/night</strong>
+                                                    </p>
+                                                    <a href="{% url 'hotel:room_detail' room_item.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                                                        View Details
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    {% if forloop.counter|divisibleby:3 or forloop.last %}
+                                    </div>
+                                    {% endif %}
+
+                                {% if forloop.last %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                {% if hotel.rooms.count > 3 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#roomsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#roomsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        border: none;
+    }
+
+    .room-thumbnail:hover {
+        border-color: #007bff !important;
+        transform: scale(1.05);
+    }
+
+    .carousel-item {
+        padding: 20px 0;
+    }
+
+    .breadcrumb {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 12px 15px;
+    }
+
+    @media (max-width: 768px) {
+        .carousel-item .row {
+            flex-direction: column;
+        }
+
+        .carousel-item .col-md-4 {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    function changeMainImage(imageUrl) {
+        document.getElementById('mainImage').src = imageUrl;
+        // Add active effect to thumbnail
+        document.querySelectorAll('.room-thumbnail').forEach(thumb => {
+            thumb.style.borderColor = '#ddd';
+        });
+        event.target.style.borderColor = '#007bff';
+    }
+</script>
+{% endblock %}

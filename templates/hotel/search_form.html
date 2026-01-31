@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Search Availability - {{ hotel.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4"><i class="fas fa-search"></i> Search Availability</h2>
+            
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.check_in_date.id_for_label }}" class="form-label">{{ form.check_in_date.label }}</label>
+                                {{ form.check_in_date }}
+                                {% if form.check_in_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.check_in_date.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.check_out_date.id_for_label }}" class="form-label">{{ form.check_out_date.label }}</label>
+                                {{ form.check_out_date }}
+                                {% if form.check_out_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.check_out_date.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.guests.id_for_label }}" class="form-label">{{ form.guests.label }}</label>
+                                {{ form.guests }}
+                                {% if form.guests.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.guests.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Search Availability
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'hotel:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Hotel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

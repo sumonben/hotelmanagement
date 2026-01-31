@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notification Preferences - RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-bell"></i> Notification Preferences</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Notification Menu -->
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+                <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user"></i> Edit Profile
+                </a>
+                <a href="{% url 'users:change_password' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+                <a href="{% url 'users:notification_preferences' %}" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="{% url 'users:account' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-cog"></i> Account Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Notification Content -->
+        <div class="col-md-9">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Email Notifications -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-envelope"></i> Email Notifications</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">Manage your email notification preferences below.</p>
+                        
+                        <!-- Booking Confirmation -->
+                        <div class="form-check mb-3">
+                            {{ form.email_booking_confirmation }}
+                            <label class="form-check-label" for="{{ form.email_booking_confirmation.id_for_label }}">
+                                <strong>Booking Confirmation</strong>
+                                <small class="d-block text-muted mt-1">Receive email when your booking is confirmed</small>
+                            </label>
+                        </div>
+
+                        <!-- Booking Reminder -->
+                        <div class="form-check mb-3">
+                            {{ form.email_booking_reminder }}
+                            <label class="form-check-label" for="{{ form.email_booking_reminder.id_for_label }}">
+                                <strong>Booking Reminder</strong>
+                                <small class="d-block text-muted mt-1">Receive reminders before your check-in date</small>
+                            </label>
+                        </div>
+
+                        <!-- Promotional Emails -->
+                        <div class="form-check mb-3">
+                            {{ form.email_promotional }}
+                            <label class="form-check-label" for="{{ form.email_promotional.id_for_label }}">
+                                <strong>Promotional Offers</strong>
+                                <small class="d-block text-muted mt-1">Receive special deals and exclusive offers</small>
+                            </label>
+                        </div>
+
+                        <!-- Newsletter -->
+                        <div class="form-check">
+                            {{ form.email_newsletter }}
+                            <label class="form-check-label" for="{{ form.email_newsletter.id_for_label }}">
+                                <strong>Newsletter</strong>
+                                <small class="d-block text-muted mt-1">Subscribe to our weekly newsletter with news and updates</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS Notifications -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-mobile-alt"></i> SMS Notifications</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">Receive important updates via SMS to your registered phone number.</p>
+                        
+                        <!-- SMS Booking Confirmation -->
+                        <div class="form-check mb-3">
+                            {{ form.sms_booking_confirmation }}
+                            <label class="form-check-label" for="{{ form.sms_booking_confirmation.id_for_label }}">
+                                <strong>Booking Confirmation SMS</strong>
+                                <small class="d-block text-muted mt-1">Receive SMS when your booking is confirmed</small>
+                            </label>
+                        </div>
+
+                        <!-- SMS Booking Reminder -->
+                        <div class="form-check">
+                            {{ form.sms_booking_reminder }}
+                            <label class="form-check-label" for="{{ form.sms_booking_reminder.id_for_label }}">
+                                <strong>Booking Reminder SMS</strong>
+                                <small class="d-block text-muted mt-1">Receive SMS reminders before your check-in date</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In-App Notifications -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-bell"></i> In-App Notifications</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            {{ form.in_app_notifications }}
+                            <label class="form-check-label" for="{{ form.in_app_notifications.id_for_label }}">
+                                <strong>Show In-App Notifications</strong>
+                                <small class="d-block text-muted mt-1">Receive notifications within the application for important events</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Alert -->
+                <div class="alert alert-info alert-dismissible" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle"></i> Important</h6>
+                    <p class="mb-0">
+                        Some critical notifications like booking confirmations and payment receipts will be sent regardless of your preference settings.
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <strong>Error:</strong>
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                <!-- Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                    <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-check {
+        padding-left: 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-check-input {
+        margin-top: 0.3rem;
+        margin-right: 0.75rem;
+        cursor: pointer;
+        width: 1.25em;
+        height: 1.25em;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        margin-bottom: 0;
+        padding-left: 0;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .form-check-label strong {
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .list-group-item {
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .list-group-item:hover {
+        border-left-color: #3498db;
+        background-color: #f8f9fa;
+    }
+
+    .list-group-item.active {
+        border-left-color: #3498db;
+    }
+
+    .card {
+        border: none;
+        border-radius: 0.75rem;
+    }
+
+    .card-header {
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+    }
+
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}

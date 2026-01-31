@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}My Bookings - RHMS{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4"><i class="fas fa-calendar-check"></i> My Bookings</h1>
+            
+            <!-- Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-primary">{{ total_bookings }}</h2>
+                            <p class="card-text">Total Bookings</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-success">{{ confirmed_bookings }}</h2>
+                            <p class="card-text">Confirmed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-info">{{ completed_bookings }}</h2>
+                            <p class="card-text">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <a href="{% url 'hotel:home' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bookings List -->
+            {% if bookings %}
+                {% for booking in bookings %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h5 class="card-title">{{ booking.hotel.name }}</h5>
+                                <p class="card-text">
+                                    <strong>Booking ID:</strong> {{ booking.booking_id }}<br>
+                                    <strong>Room:</strong> {{ booking.room.room_number }}<br>
+                                    <strong>Check-in:</strong> {{ booking.check_in_date }}<br>
+                                    <strong>Check-out:</strong> {{ booking.check_out_date }}
+                                </p>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="text-end">
+                                    <h5 class="hotel-price">${{ booking.total_price }}</h5>
+                                    <p>
+                                        <span class="badge {% if booking.status == 'confirmed' %}bg-success{% elif booking.status == 'pending' %}bg-warning{% elif booking.status == 'cancelled' %}bg-danger{% else %}bg-info{% endif %}">
+                                            {{ booking.get_status_display }}
+                                        </span>
+                                        <span class="badge {% if booking.payment_status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                            Payment: {{ booking.get_payment_status_display }}
+                                        </span>
+                                    </p>
+                                    <a href="{% url 'booking:booking_detail' booking.id %}" class="btn btn-sm btn-primary">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You don't have any bookings yet.
+                    <a href="{% url 'hotel:home' %}">Start exploring the hotel</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

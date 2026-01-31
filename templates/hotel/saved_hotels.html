@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Hotels - RHMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4"><i class="fas fa-heart"></i> My Saved Hotels</h2>
+
+            {% if is_saved %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You have saved {{ hotel.name }}.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm mb-4">
+                            {% if hotel.image %}
+                                <img src="{{ hotel.image.url }}" alt="{{ hotel.name }}" class="card-img-top" style="height: 300px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title h3">{{ hotel.name }}</h5>
+                                
+                                <p class="text-muted mb-3">
+                                    <i class="fas fa-map-marker-alt"></i> {{ hotel.address }}<br>
+                                    {{ hotel.city }}, {{ hotel.state }} {{ hotel.postal_code }}, {{ hotel.country }}
+                                </p>
+
+                                <p class="card-text">{{ hotel.description }}</p>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong><i class="fas fa-star"></i> Rating:</strong><br>
+                                            <span class="badge bg-warning">{{ hotel.get_average_rating }}/5</span>
+                                            ({{ hotel.total_reviews }} reviews)
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong><i class="fas fa-door-open"></i> Available Rooms:</strong><br>
+                                            <span class="badge bg-success">{{ hotel.rooms.filter|length }} rooms</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong><i class="fas fa-clock"></i> Check-in/out:</strong><br>
+                                            {{ hotel.check_in_time }} / {{ hotel.check_out_time }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p>
+                                            <strong><i class="fas fa-phone"></i> Contact:</strong><br>
+                                            <a href="tel:{{ hotel.phone }}">{{ hotel.phone }}</a><br>
+                                            <a href="mailto:{{ hotel.email }}">{{ hotel.email }}</a>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="btn-group w-100 mt-4" role="group">
+                                    <a href="{% url 'hotel:home' %}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> View Hotel
+                                    </a>
+                                    <form method="post" action="{% url 'hotel:save_hotel' %}" style="width: 50%;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-times"></i> Remove from Saved
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Facilities -->
+                        {% if hotel.facilities.all %}
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-concierge-bell"></i> Facilities & Amenities</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for facility in hotel.facilities.all %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="facility-item">
+                                                {% if facility.icon %}
+                                                    <i class="{{ facility.icon }}"></i>
+                                                {% else %}
+                                                    <i class="fas fa-check-circle"></i>
+                                                {% endif %}
+                                                <strong>{{ facility.name }}</strong>
+                                                {% if facility.description %}
+                                                    <p class="text-muted small">{{ facility.description }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Room Types -->
+                        {% if hotel.room_types.all %}
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-door-open"></i> Available Room Types</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for room_type in hotel.room_types.all %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                {% if room_type.image %}
+                                                    <img src="{{ room_type.image.url }}" alt="{{ room_type.name }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                {% endif %}
+                                                <div class="card-body">
+                                                    <h6>{{ room_type.name }}</h6>
+                                                    <p class="small text-muted">{{ room_type.description }}</p>
+                                                    <p class="small">
+                                                        <strong>Guests:</strong> Up to {{ room_type.max_guests }}<br>
+                                                        <strong>Beds:</strong> {{ room_type.beds }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Recent Reviews -->
+                        {% if hotel.reviews.all %}
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-comments"></i> Recent Reviews</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for review in hotel.reviews.all|slice:":5" %}
+                                    <div class="review-item mb-3 pb-3 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                                                <div class="review-rating">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= review.rating %}
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        {% if review.title %}
+                                            <p class="mb-1 mt-2"><strong>{{ review.title }}</strong></p>
+                                        {% endif %}
+                                        {% if review.comment %}
+                                            <p class="text-muted small">{{ review.comment|truncatewords:30 }}</p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Quick Info</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-3">
+                                    <strong>Hotel Status:</strong><br>
+                                    <span class="badge bg-success">{{ hotel.get_status_display }}</span>
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Average Rating:</strong><br>
+                                    <span class="h5">{{ hotel.get_average_rating }}/5.0</span><br>
+                                    <small class="text-muted">({{ hotel.total_reviews }} reviews)</small>
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Total Rooms:</strong><br>
+                                    <span class="h5">{{ hotel.rooms.count }}</span>
+                                </p>
+
+                                <p class="mb-3">
+                                    <strong>Room Types:</strong><br>
+                                    <span class="h5">{{ hotel.room_types.count }}</span>
+                                </p>
+
+                                <hr>
+
+                                <p class="mb-0">
+                                    <strong>Contact Information:</strong><br>
+                                    <small>
+                                        Phone: <a href="tel:{{ hotel.phone }}">{{ hotel.phone }}</a><br>
+                                        Email: <a href="mailto:{{ hotel.email }}">{{ hotel.email }}</a>
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Ready to Book?</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <p class="text-muted mb-3">Check availability and book your stay now!</p>
+                                <a href="{% url 'hotel:home' %}" class="btn btn-success w-100">
+                                    <i class="fas fa-search"></i> Search & Book
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-heart-broken"></i> <strong>No saved hotels yet!</strong>
+                    <p>You haven't saved any hotels. Explore our hotel and add your favorites to your wishlist.</p>
+                    <a href="{% url 'hotel:home' %}" class="btn btn-primary">
+                        <i class="fas fa-star"></i> Start Saving Hotels
+                    </a>
+                </div>
+
+                <!-- Featured Hotel Card -->
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Featured Hotel</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                <h5>{{ hotel.name }}</h5>
+                                <p class="text-muted">
+                                    {{ hotel.address }}<br>
+                                    {{ hotel.city }}, {{ hotel.state }}, {{ hotel.country }}
+                                </p>
+                                <p class="mb-3">
+                                    <i class="fas fa-star text-warning"></i> 
+                                    <strong>{{ hotel.get_average_rating }}/5</strong>
+                                    ({{ hotel.total_reviews }} reviews)
+                                </p>
+                                <p class="text-muted">{{ hotel.description|truncatewords:20 }}</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                    <a href="{% url 'hotel:save_hotel' %}" class="btn btn-danger" onclick="return confirm('Save this hotel to your wishlist?')">
+                                        <i class="fas fa-heart"></i> Add to Wishlist
+                                    </a>
+                                    <a href="{% url 'hotel:home' %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Back Navigation -->
+            <div class="mt-5 pt-3 border-top">
+                <a href="{% url 'hotel:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Hotel
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'booking:booking_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-calendar"></i> My Bookings
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .facility-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .facility-item i {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .review-item {
+        padding-bottom: 15px;
+    }
+
+    .review-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .review-rating {
+        margin: 5px 0;
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-direction: column;
+        }
+
+        .btn-group .btn {
+            border-radius: 5px !important;
+            margin-bottom: 5px;
+        }
+    }
+</style>
+{% endblock %}

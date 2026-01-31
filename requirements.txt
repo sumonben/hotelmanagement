@@ -1,0 +1,7 @@
+Django>=4.2
+Pillow>=10.0.0
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2.0.0
+django-filter>=24.0
+python-dateutil>=2.8.0
+sslcommerz-lib>=1.2.1

@@ -25,8 +25,8 @@ Update `rhms_config/settings.py` with your SSL Commerz credentials:
 
 ```python
 # SSL Commerz Payment Gateway Configuration
-SSLCOMMERZ_STORE_ID = 'your_store_id'  # Get from SSL Commerz dashboard
-SSLCOMMERZ_STORE_PASSWORD = 'your_store_password'  # Get from SSL Commerz dashboard
+SSLCOMMERZ_STORE_ID = 'ziana695a18ca87746'  # Get from SSL Commerz dashboard
+SSLCOMMERZ_STORE_PASSWORD = 'ziana695a18ca87746@ssl'  # Get from SSL Commerz dashboard
 SSLCOMMERZ_IS_SANDBOX = True  # Set to False for production
 ```
 

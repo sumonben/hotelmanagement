@@ -12,6 +12,9 @@ urlpatterns = [
     
     # Payment
     path('<int:booking_id>/payment/', views.PaymentView.as_view(), name='payment'),
+    path('payment/success/', views.payment_success, name='payment_success'),
+    path('payment/failed/', views.payment_failed, name='payment_failed'),
+    path('payment/cancelled/', views.payment_cancelled, name='payment_cancelled'),
     
     # Check-in/out
     path('<int:booking_id>/checkin/', views.booking_checkin, name='checkin'),
